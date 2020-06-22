@@ -1,0 +1,12 @@
+[package]
+name = "hold"
+version = "0.1.0"
+authors = ["Kevin Frez <kevin.frez.p@hotmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "0.2", features = ["macros", "rt-threaded", "time", "sync"] }
+# futures = "0.3.5"
+trait-async = "0.1.24"
