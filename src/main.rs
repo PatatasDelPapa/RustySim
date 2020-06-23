@@ -79,7 +79,6 @@ impl Objeto {
 }
 
 enum Command {
-    // Incrementar{id:u64, counter: u64},
     Dormir(u64),
     Despertar(u64),
 }
@@ -109,11 +108,6 @@ impl Pausable for Objeto {
 
     async fn passivate(&mut self) {
         debug!("Passivate ID: {}", self.id);
-        // let mut counter: u64 = 0;
-        //     dbg!(counter);
-        // let (resp_tx, resp_rx) = oneshot::channel::<u64>();
-        // self.channel.send((counter, resp_tx)).await.unwrap();
-        // counter = resp_rx.await.unwrap();
         let mut result;
         loop {
             let (tx, rx) = oneshot::channel();
@@ -127,10 +121,6 @@ impl Pausable for Objeto {
                 break;
             }
         }
-
-        // let result = rx.await.unwrap();
-        // dbg!(result);
-        // self.channel.send((Command::Incrementar{id: 1,counter}, tx)).await.ok().unwrap();
     }
 
     async fn activate(&mut self, c: u64) {
@@ -138,9 +128,6 @@ impl Pausable for Objeto {
         // async fn activate<T>(&self, c: T) {
         // where
         //     T: Pausable + Send + Sync + 'trait_async,s
-        // {
-        // let _ = c;
-        // todo!("Implementar Funcion Activate");
         let mut result;
         loop {
             // dbg!(result);
@@ -155,11 +142,5 @@ impl Pausable for Objeto {
                 break;
             }
         }
-
-        // let result = rx.await;
-        // match result {
-        //     Ok(_) => info!("Activate Termino con exito"),
-        //     Err(e) => eprintln!("Fracaso, why?: {:?}", e),
-        // };
     }
 }
