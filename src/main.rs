@@ -10,7 +10,7 @@ extern crate log;
 async fn main() {
     env_logger::init();
     info!("Iniciando Programa");
-    let (transmisor, mut receptor) = mpsc::channel::<(Command, oneshot::Sender<u64>)>(1);
+    let (transmisor, mut receptor) = mpsc::channel::<(Command, oneshot::Sender<Response>)>(1);
     tokio::spawn(async move {
         let mut procesos = HashMap::new();
         let mut resultado;
@@ -29,12 +29,12 @@ async fn main() {
                             match resultado {
                                 Some(channel) => { 
                                     debug!("Mandando respuestas!");
-                                    channel.send(42).unwrap(); 
-                                    response.send(0).unwrap();
+                                    channel.send(Response::Romper).unwrap(); 
+                                    response.send(Response::Romper).unwrap();
                                 },
                                 None => { 
                                     warn!("Proceso con ID: {} no esta durmiendo", id); 
-                                    response.send(42).unwrap();
+                                    response.send(Response::Continuar).unwrap();
                                 },
                             };
                         },
@@ -70,13 +70,13 @@ async fn main() {
 // Representacion de la corrutina
 // Tiene un channel para enviar cosas al controlador
 struct Objeto {
-    channel: mpsc::Sender<(Command, oneshot::Sender<u64>)>,
+    channel: mpsc::Sender<(Command, oneshot::Sender<Response>)>,
     id: u64,
 }
 
 impl Objeto {
     fn new(
-        channel: mpsc::Sender<(Command, oneshot::Sender<u64>)>,
+        channel: mpsc::Sender<(Command, oneshot::Sender<Response>)>,
         id: u64,
     ) -> Self {
         Self {
@@ -90,6 +90,12 @@ enum Command {
     // Incrementar{id:u64, counter: u64},
     Dormir(u64),
     Despertar(u64),
+}
+
+#[derive(Debug)]
+enum Response {
+    Continuar,
+    Romper,
 }
 
 #[trait_async]
@@ -116,10 +122,16 @@ impl Pausable for Objeto {
         // let (resp_tx, resp_rx) = oneshot::channel::<u64>();
         // self.channel.send((counter, resp_tx)).await.unwrap();
         // counter = resp_rx.await.unwrap();
+        let mut result;
+        loop {
+            let (tx, rx) = oneshot::channel();
+            self.channel.send((Command::Dormir(self.id), tx)).await.ok().unwrap();
+            result = rx.await.unwrap();
+            if let Response::Romper = result {
+                break;
+            }
+        }
 
-        let (tx, rx) = oneshot::channel();
-        self.channel.send((Command::Dormir(self.id), tx)).await.ok().unwrap();
-        let _ = rx.await.unwrap();
         // let result = rx.await.unwrap();
         // dbg!(result);
         // self.channel.send((Command::Incrementar{id: 1,counter}, tx)).await.ok().unwrap();
@@ -133,13 +145,15 @@ impl Pausable for Objeto {
         // {
         // let _ = c;
         // todo!("Implementar Funcion Activate");
-        let mut result = 1;
+        let mut result;
         loop {
             // dbg!(result);
-            if result == 0 { break; }
             let (tx, rx) = oneshot::channel();
             self.channel.send((Command::Despertar(c), tx)).await.ok().unwrap();
             result = rx.await.unwrap();
+            if let Response::Romper = result {
+                break;
+            }
         }
         
 
