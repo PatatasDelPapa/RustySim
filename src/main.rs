@@ -1,10 +1,9 @@
+use hashbrown::HashMap;
 use tokio::sync::{mpsc, oneshot};
 use trait_async::trait_async;
-use hashbrown::HashMap;
 
 #[macro_use]
 extern crate log;
-
 
 #[tokio::main]
 async fn main() {
@@ -19,34 +18,33 @@ async fn main() {
             match resultado {
                 Some((command, response)) => {
                     match command {
-                        Command::Dormir(id) => { 
+                        Command::Dormir(id) => {
                             debug!("Llego command dormir para id: {}", id);
-                            let _ = procesos.insert(id, response); 
-                        },
-                        Command::Despertar(id) => { 
+                            let _ = procesos.insert(id, response);
+                        }
+                        Command::Despertar(id) => {
                             debug!("Llego command despertar para id: {}", id);
                             let resultado = procesos.remove(&id);
                             match resultado {
-                                Some(channel) => { 
+                                Some(channel) => {
                                     debug!("Mandando respuestas!");
-                                    channel.send(Response::Romper).unwrap(); 
+                                    channel.send(Response::Romper).unwrap();
                                     response.send(Response::Romper).unwrap();
-                                },
-                                None => { 
-                                    warn!("Proceso con ID: {} no esta durmiendo", id); 
+                                }
+                                None => {
+                                    warn!("Proceso con ID: {} no esta durmiendo", id);
                                     response.send(Response::Continuar).unwrap();
-                                },
+                                }
                             };
-                        },
+                        }
                     };
-                },
+                }
                 None => {
                     debug!("Todos los recievers han sido dropeados, rompiendo loop");
                     break;
-                },
+                }
             };
         }
-
     });
 
     let mut handles = vec![];
@@ -75,14 +73,8 @@ struct Objeto {
 }
 
 impl Objeto {
-    fn new(
-        channel: mpsc::Sender<(Command, oneshot::Sender<Response>)>,
-        id: u64,
-    ) -> Self {
-        Self {
-            channel,
-            id,
-        }
+    fn new(channel: mpsc::Sender<(Command, oneshot::Sender<Response>)>, id: u64) -> Self {
+        Self { channel, id }
     }
 }
 
@@ -125,7 +117,11 @@ impl Pausable for Objeto {
         let mut result;
         loop {
             let (tx, rx) = oneshot::channel();
-            self.channel.send((Command::Dormir(self.id), tx)).await.ok().unwrap();
+            self.channel
+                .send((Command::Dormir(self.id), tx))
+                .await
+                .ok()
+                .unwrap();
             result = rx.await.unwrap();
             if let Response::Romper = result {
                 break;
@@ -149,13 +145,16 @@ impl Pausable for Objeto {
         loop {
             // dbg!(result);
             let (tx, rx) = oneshot::channel();
-            self.channel.send((Command::Despertar(c), tx)).await.ok().unwrap();
+            self.channel
+                .send((Command::Despertar(c), tx))
+                .await
+                .ok()
+                .unwrap();
             result = rx.await.unwrap();
             if let Response::Romper = result {
                 break;
             }
         }
-        
 
         // let result = rx.await;
         // match result {
