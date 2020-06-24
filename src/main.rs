@@ -48,7 +48,7 @@ async fn main() {
     });
 
     let mut handles = vec![];
-
+// ------------------------------------------------------------------------------------------------------------
     let clone = transmisor.clone();
     let obj_1 = Objeto::new(1);
     let obj_1_ref = &obj_1;
@@ -56,7 +56,7 @@ async fn main() {
         obj_1.passivate(clone).await;
     }));
 
-
+                                                                        // Zona de Errores
     let clone = transmisor.clone();
     handles.push(tokio::spawn(async move {
         let obj_2 = Objeto::new(2);
@@ -66,6 +66,7 @@ async fn main() {
     for handle in handles.drain(..) {
         handle.await.unwrap();
     }
+// -------------------------------------------------------------------------------------------------------------
 }
 // Representacion de la corrutina
 // Tiene un channel para enviar cosas al controlador
