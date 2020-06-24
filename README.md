@@ -1,6 +1,6 @@
 # RustySim
 
-### Este parte presenta problemas con lifetimes
+### Esta parte presenta problemas con lifetimes
 ### Command necesita enviar una referencia del objeto al que se le realiza el command (En este caso dormir)
 ### Pero no podemos hacer que el objeto actual mande una referencia de si mismo a traves del channel
 ```
