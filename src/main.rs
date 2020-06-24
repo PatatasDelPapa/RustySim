@@ -48,7 +48,7 @@ async fn main() {
     });
 
     let mut handles = vec![];
-// ---------------------------------------------------------------
+    // ---------------------------------------------------------------
     let clone = transmisor.clone();
     let obj_1 = Objeto::new(1);
     let obj_1_ref = &obj_1;
@@ -56,17 +56,17 @@ async fn main() {
         obj_1.passivate(clone).await;
     }));
 
-                                                // Zona de Errores
+    // Zona de Errores
     let clone = transmisor.clone();
     handles.push(tokio::spawn(async move {
         let obj_2 = Objeto::new(2);
-        obj_2.activate(*&obj_1_ref, clone).await;
+        obj_2.activate(obj_1_ref, clone).await;
     }));
 
     for handle in handles.drain(..) {
         handle.await.unwrap();
     }
-// ---------------------------------------------------------------
+    // ---------------------------------------------------------------
 }
 // Representacion de la corrutina
 #[derive(PartialEq, Eq, Hash)]
@@ -95,8 +95,15 @@ enum Response {
 trait Pausable {
     fn id(&self) -> u64;
     async fn hold(&self, t: u64);
-    async fn passivate<'a>(&'a self, mut channel: mpsc::Sender<(Command<'a>, oneshot::Sender<Response>)>);
-    async fn activate<'a>(&self, c: &'a Objeto, channel: mpsc::Sender<(Command<'a>, oneshot::Sender<Response>)>);
+    async fn passivate<'a>(
+        &'a self,
+        mut channel: mpsc::Sender<(Command<'a>, oneshot::Sender<Response>)>,
+    );
+    async fn activate<'a>(
+        &self,
+        c: &'a Objeto,
+        channel: mpsc::Sender<(Command<'a>, oneshot::Sender<Response>)>,
+    );
     // async fn activate<T>(&self, c: T)
     // where
     //     T: Pausable + Sync + Send + 'trait_async;
@@ -112,7 +119,10 @@ impl Pausable for Objeto {
         todo!("Implementar Funcion Hold")
     }
 
-    async fn passivate<'a>(&'a self, mut channel: mpsc::Sender<(Command<'a>, oneshot::Sender<Response>)>) {
+    async fn passivate<'a>(
+        &'a self,
+        mut channel: mpsc::Sender<(Command<'a>, oneshot::Sender<Response>)>,
+    ) {
         debug!("Passivate ID: {}", self.id);
         let mut result;
         loop {
@@ -129,7 +139,11 @@ impl Pausable for Objeto {
         }
     }
 
-    async fn activate<'a>(&self, c: &'a Objeto, mut channel: mpsc::Sender<(Command<'a>, oneshot::Sender<Response>)>) {
+    async fn activate<'a>(
+        &self,
+        c: &'a Objeto,
+        mut channel: mpsc::Sender<(Command<'a>, oneshot::Sender<Response>)>,
+    ) {
         debug!("Activate ID: {} -> {}", self.id, c.id());
         // async fn activate<T>(&self, c: T) {
         // where
