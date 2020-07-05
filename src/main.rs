@@ -38,7 +38,7 @@ async fn main() {
                                     response.send(Response::Romper).unwrap();
                                 }
                                 None => {
-                                    warn!("Proceso con ID: {} no esta durmiendo", id);
+                                    // warn!("Proceso con ID: {} no esta durmiendo", id);
                                     response.send(Response::Continuar).unwrap();
                                 }
                             };
@@ -66,7 +66,7 @@ async fn main() {
                                     }
                                 }
                                 None => {
-                                    warn!("No habia ninguna id en la FEL");
+                                    // warn!("No habia ninguna id en la FEL");
                                     response.send(Response::Continuar).unwrap();
                                 }
                             }
@@ -75,7 +75,7 @@ async fn main() {
                     };
                 }
                 None => {
-                    debug!("Todos los recievers han sido dropeados, rompiendo loop");
+                    // debug!("Todos los recievers han sido dropeados, rompiendo loop");
                     break;
                 }
             };
@@ -138,7 +138,7 @@ async fn advance(channel: &mut mpsc::Sender<(Command, oneshot::Sender<Response>)
             // debug!("ADVANCE => No llego romper");
         }
     }
-    debug!("Advance Ends");
+    // debug!("Advance Ends");
 }
 
 // Representacion de la corrutina
@@ -194,7 +194,7 @@ impl Pausable for Objeto {
                 // debug!("HOLD => No llego romper");
             }
         }
-        debug!("Hold id {} Ends", self.id);
+        // debug!("Hold id {} Ends", self.id);
     }
 
     async fn passivate(&mut self) {
@@ -214,11 +214,11 @@ impl Pausable for Objeto {
                 // debug!("PASSIVATE => No llego romper");
             }
         }
-        debug!("Passivate ID {} Ends", self.id);
+        // debug!("Passivate ID {} Ends", self.id);
     }
 
     async fn activate(&mut self, c: u64) {
-        debug!("Activate ID: {} -> {}", self.id, c);
+        // debug!("Activate ID: {} -> {}", self.id, c);
         // async fn activate<T>(&self, c: T) {
         // where
         //     T: Pausable + Send + Sync + 'trait_async,s
@@ -238,6 +238,6 @@ impl Pausable for Objeto {
                 // debug!("ACTIVATE => No llego romper");
             }
         }
-        debug!("Activate id {} to id {} Ends", self.id, c);
+        // debug!("Activate id {} to id {} Ends", self.id, c);
     }
 }
