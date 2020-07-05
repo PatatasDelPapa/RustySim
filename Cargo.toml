@@ -8,8 +8,9 @@ edition = "2018"
 
 [dependencies]
 tokio = { version = "0.2", features = ["macros", "rt-threaded", "time", "sync"] }
-# futures = "0.3.5"
+futures = "0.3.5"
 trait-async = "0.1.24"
 hashbrown = "0.8"
 log = "0.4.0"
 env_logger = "0.7.1"
+priority-queue = "1.0.0"
