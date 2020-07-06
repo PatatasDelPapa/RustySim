@@ -1,3 +1,4 @@
+#![forbid(unsafe_code)]
 use hashbrown::HashMap;
 use tokio::sync::{mpsc, oneshot};
 use trait_async::trait_async;
@@ -5,13 +6,11 @@ use priority_queue::PriorityQueue;
 use std::cmp::Reverse;
 // use futures::stream::FuturesOrdered;
 
-#[macro_use]
-extern crate log;
 
 #[tokio::main]
 async fn main() {
     env_logger::init();
-    info!("Iniciando Programa");
+    log::info!("Iniciando Programa");
     let (transmisor, mut receptor) = mpsc::channel::<(Command, oneshot::Sender<Response>)>(1);
     tokio::spawn(async move {
         let mut lista_passivates = HashMap::new();
@@ -25,48 +24,48 @@ async fn main() {
                 Some((command, response)) => {
                     match command {
                         Command::Dormir(id) => {
-                            debug!("Llego command passivate para id: {}", id);
+                            log::debug!("Llego command passivate para id: {}", id);
                             let _ = lista_passivates.insert(id, response);
                         }
                         Command::Despertar(id) => {
-                            debug!("Llego command activate para id: {}", id);
+                            log::debug!("Llego command activate para id: {}", id);
                             let resultado = lista_passivates.remove(&id);
                             match resultado {
                                 Some(channel) => {
-                                    // debug!("Mandando respuestas!");
+                                    // log::debug!("Mandando respuestas!");
                                     channel.send(Response::Romper).unwrap();
                                     response.send(Response::Romper).unwrap();
                                 }
                                 None => {
-                                    // warn!("Proceso con ID: {} no esta durmiendo", id);
+                                    // log::warn!("Proceso con ID: {} no esta durmiendo", id);
                                     response.send(Response::Continuar).unwrap();
                                 }
                             };
                         }
                         Command::Hold(id, mut t) => {
-                            debug!("Llego command hold para id: {} con tiempo: {}", id, t);
+                            log::debug!("Llego command hold para id: {} con tiempo: {}", id, t);
                             let _ = future_event_list_aux.insert(id, response);
                             t += tiempo;
                             let _ = future_event_list.push(id, Reverse(t));
                         }
                         Command::Advance => {
-                            debug!("Llego command Advance");
+                            log::debug!("Llego command Advance");
                             let some_id = future_event_list.pop();
                             // let (id, t) = some_id.unwrap();
                             match some_id {
                                 Some((id, t)) => {
-                                    debug!("ID {} ha salido de la FEL", id);
+                                    log::debug!("ID {} ha salido de la FEL", id);
                                     tiempo += t.0 - tiempo;
                                     let resultado = future_event_list_aux.remove(&id);
                                     if let Some(channel) = resultado {
-                                        // debug!("Mandando respuesta a channel");
+                                        // log::debug!("Mandando respuesta a channel");
                                         channel.send(Response::Romper).unwrap();
-                                        // debug!("Mandando Respuesta a response");
+                                        // log::debug!("Mandando Respuesta a response");
                                         response.send(Response::Romper).unwrap();
                                     }
                                 }
                                 None => {
-                                    // warn!("No habia ninguna id en la FEL");
+                                    // log::warn!("No habia ninguna id en la FEL");
                                     response.send(Response::Continuar).unwrap();
                                 }
                             }
@@ -75,12 +74,12 @@ async fn main() {
                     };
                 }
                 None => {
-                    // debug!("Todos los recievers han sido dropeados, rompiendo loop");
+                    // log::debug!("Todos los recievers han sido dropeados, rompiendo loop");
                     break;
                 }
             };
         }
-        info!("Tiempo final simulado = {}", tiempo);
+        log::info!("Tiempo final simulado = {}", tiempo);
     });
 
     let mut handles = vec![];
@@ -132,13 +131,13 @@ async fn advance(channel: &mut mpsc::Sender<(Command, oneshot::Sender<Response>)
             .unwrap();
         let result = rx.await.unwrap();
         if let Response::Romper = result {
-            // debug!("ADVANCE => Llego romper");
+            // log::debug!("ADVANCE => Llego romper");
             break;
         } else {
-            // debug!("ADVANCE => No llego romper");
+            // log::debug!("ADVANCE => No llego romper");
         }
     }
-    // debug!("Advance Ends");
+    // log::debug!("Advance Ends");
 }
 
 // Representacion de la corrutina
@@ -191,14 +190,14 @@ impl Pausable for Objeto {
             if let Response::Romper = result {
                 break;
             } else {
-                // debug!("HOLD => No llego romper");
+                // log::debug!("HOLD => No llego romper");
             }
         }
-        // debug!("Hold id {} Ends", self.id);
+        // log::debug!("Hold id {} Ends", self.id);
     }
 
     async fn passivate(&mut self) {
-        // debug!("Passivate ID: {}", self.id);
+        // log::debug!("Passivate ID: {}", self.id);
         let mut result;
         loop {
             let (tx, rx) = oneshot::channel();
@@ -211,14 +210,14 @@ impl Pausable for Objeto {
             if let Response::Romper = result {
                 break;
             }else{
-                // debug!("PASSIVATE => No llego romper");
+                // log::debug!("PASSIVATE => No llego romper");
             }
         }
-        // debug!("Passivate ID {} Ends", self.id);
+        // log::debug!("Passivate ID {} Ends", self.id);
     }
 
     async fn activate(&mut self, c: u64) {
-        // debug!("Activate ID: {} -> {}", self.id, c);
+        // log::debug!("Activate ID: {} -> {}", self.id, c);
         // async fn activate<T>(&self, c: T) {
         // where
         //     T: Pausable + Send + Sync + 'trait_async,s
@@ -235,9 +234,9 @@ impl Pausable for Objeto {
             if let Response::Romper = result {
                 break;
             } else {
-                // debug!("ACTIVATE => No llego romper");
+                // log::debug!("ACTIVATE => No llego romper");
             }
         }
-        // debug!("Activate id {} to id {} Ends", self.id, c);
+        // log::debug!("Activate id {} to id {} Ends", self.id, c);
     }
 }
