@@ -1,1 +1,3 @@
-Tokio Select! Macro podria ser util
+Checks si el objeto ya esta durmiendo o no
+Si lo mandan a dormir mientras ya duerme o a despertar si ya esta despierto entonces panic
+Normalizar los nombres: Solo ingles
