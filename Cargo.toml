@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "0.2", features = ["macros", "rt-threaded", "sync"] }
+tokio = { version = "0.2", features = ["rt-threaded", "sync"] }
 # futures = "0.3.5"
 trait-async = "0.1.24"
 hashbrown = "0.8"
